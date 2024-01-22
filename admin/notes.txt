@@ -1,0 +1,95 @@
+KEY NOTE ABOUT DJANGO: 
+    DJANGO CANNOT GENERATE DATABASES OR TABLES AUTOMATICALLY
+    YOU MUST CONNECT TO YOUR DB AND CREATE BOTH DATABASE & RUN:
+        python manage.py migrate
+    BEFORE RUNNING
+        python manage.py runserver      
+    BECAUSE OF THIS I HAVE NO IDEA HOW TO GET THIS WORKING IN  DOCKER CONTAINER - BECAUSE YOU CAN ONLY RUN 1 CMD PER DOCERFILE (ABSOLUTELY FUCKING RETARDED)
+    && THE DJANGO APPLICATION IS DEPENDANT ON DB, BUT DB WILL FAIL WITHOUT CONFIGURATION, SO WHAT WAS THE POINT IN USING DOCKER IN THIS CASE
+    IF IT DOES NOT SUPPORT TRUE DEPLOYMENT AUTOMATION, THATS THE WHOLE POINT OF DOCKER ??????
+
+
+to create a new application:
+    django-admin startproject <name of app>
+    cd <name of app>
+
+verify & run the app initially
+    <python3 / python> manage.py runserver
+
+
+then requirements.txt were built
+
+    # the following is dependencies for the app
+    Django
+    djangorestframework
+    mysqlclient
+    django-mysql
+    django-cors-headers # for frontend to access backend
+    pika # for rabbitMQ
+
+then the dockerfile was built
+
+then the docker-compose.yml was built
+
+then:
+    docker-compose up
+
+then db can be connected to with the creds outlined in docker-compose.yml 
+(if port is enabled)
+
+then connect to the docker container to create tables:
+    docker-compose exec <name of service> sh
+    or
+    in vsc docker plugin right click and attach shell
+
+then:
+    python manage.py startapp products
+
+then go to /settings.py & add products to installed apps
+
+then adding: 
+    to installed_apps: 
+            'rest_framework',
+            'corsheaders',
+            'products'
+    to middleware: 
+        'corsheaders.middleware.CorsMiddleware'
+    to end of file:
+        CORS_ORIGIN_ALLOW_ALL = True
+
+then changing: 
+    from: 
+        DATABASES = {
+            'default': {
+                'ENGINE': 'django.db.backends.sqlite3',
+                'NAME': BASE_DIR / 'db.sqlite3',
+            }
+        }
+    to: 
+        DATABASES = {
+            'default': {
+                'ENGINE': 'django.db.backends.mysql',
+                'NAME': 'admin',
+                'USER': 'root',
+                'PASSWORD': 'root',
+                'HOST': 'mysql_backend_admin',
+                'PORT': '3306'
+            }
+        }   
+
+restart:
+    docker-compose up
+
+add classes to the newly generated products - models.py
+& run table migrations to generate tables while connected to the docker shell:
+    python manage.py makemigrations
+    python manage.py migrate
+
+then added serializer, views & urls 
+
+& update other urls: 
+
+    urlpatterns = [
+        path('admin/', admin.site.urls),
+        path('api/', include('products.urls')),
+    ]

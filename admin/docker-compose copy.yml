@@ -1,0 +1,45 @@
+version: '3.8'
+services:
+
+  django-backend:
+    build:
+      # current directory is context 
+      context: .
+      # just outline what will be used
+      dockerfile: Dockerfile
+    command: 'python manage.py runserver 0.0.0.0:8000'
+    ports:
+      # local port : dockerfile port
+      - 8000:8000
+    volumes:
+      # all files in current dir are connected with docker container
+      # every time changes are made these are
+      # to each other reflectively (local -> docker & docker -> local)
+      - .:/app
+    depends_on:
+      - db
+
+  db:
+    image: mysql
+    # if the app stops it will auto-restart
+    restart: always
+    environment:
+      # TODO: ENCRYPT CREDS
+      MYSQL_DATABASE: admin
+      MYSQL_USER: root
+      MYSQL_PASSWORD: root
+      MYSQL_ROOT_PASSWORD: root
+    volumes:
+    # maps all files stored to this dir
+      - .dbdata:/var/lib/mysql
+    ports:
+    # not required - only enabled cto view data
+      - 33066:3306
+  # queue:
+  #   build:
+  #     context: .
+  #     dockerfile: Dockerfile
+  #   command: 'python -u consumer.py'
+  #   depends_on:
+  #     - db
+
